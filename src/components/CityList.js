@@ -1,34 +1,43 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { fetchWeatherByCityCoords, fetchWeatherByCityName, setActiveCity, fetchSelectedCity } from '../actions/actions';
+import { fetchSelectedCity, addCityToList, removeCityFromList, fetchWeather, clearWeather } from '../actions/actions';
 
 import "bootswatch/journal/bootstrap.css";
-import { NavItem, Nav} from "react-bootstrap";
+import { Col, NavItem, Nav} from "react-bootstrap";
 
 class CityList extends Component{
   constructor(props){
     super(props);
-
     navigator.geolocation.getCurrentPosition((position) => {
-        let lat = position.coords.latitude;
-        let lon = position.coords.longitude;
+          let latitude = position.coords.latitude;
+          let longitude = position.coords.longitude;
 
-        this.props.fetchWeatherByCityCoords(lat, lon);
-    }, () => {
-      console.log('No geolocation')
-    });
+          this.props.addCityToList('coords', {lat: latitude, lon: longitude });
+    },
+    () => {
+          console.log('No geolocation')
+        }
+    );
 
-    this.props.fetchWeatherByCityName('Odessa, UA');
-    this.props.fetchWeatherByCityName('Kiev, UA');
-    this.props.fetchWeatherByCityName('Lviv, UA');
+    this.onRemoveClick = this.onRemoveClick.bind(this);
+    this.onSelectCity = this.onSelectCity.bind(this);
   }
 
-  componentWillMount(){
+  onRemoveClick(e){
+    let active = "" + this.props.data.cities[this.props.data.activeCity].id;
+    if(e.target.value === active){
+      this.props.clearWeather()
+      this.props.fetchSelectedCity(0);
+    }
 
+    this.props.removeCityFromList(e.target.value)
+
+    e.stopPropagation();
   }
 
-  componentWillReceiveProps(nextProps){
-    //console.log('nextProps',nextProps)
+  onSelectCity(index){
+      this.props.fetchSelectedCity(index);
+      this.props.fetchWeather(this.props.data.cities[index].id)
   }
 
   render(){
@@ -38,12 +47,14 @@ class CityList extends Component{
                 <Nav
                   bsStyle="pills"
                   stacked
-                  activeKey={this.props.activeCity}
-                  onSelect={index => {
-                    this.props.fetchSelectedCity(index)
-                  }}>
+                  activeKey={ this.props.activeCity }
+                  onSelect={ index => { this.onSelectCity(index) }}>
                   {CITIES.map((city, index) =>
-                    <NavItem key={index} eventKey={index}>{city.name + ', ' + city.country}</NavItem>
+                    <NavItem key={index} eventKey={index}>
+                    <Col sm={10}>{city.name + ', ' + city.country + '    '}</Col>
+                    <button className="btn btn-primary btn-xs" type="button" value={ city.id }
+                        onClick={ this.onRemoveClick }>✖</button>
+                    </NavItem>
                   )}
                 </Nav>
               </div>)
@@ -57,4 +68,4 @@ function mapStateToProps(state){
 }
 
 
-export default connect(mapStateToProps, { fetchWeatherByCityCoords, fetchWeatherByCityName, setActiveCity, fetchSelectedCity })(CityList);
+export default connect(mapStateToProps, { fetchSelectedCity, addCityToList, removeCityFromList, fetchWeather, clearWeather })(CityList);

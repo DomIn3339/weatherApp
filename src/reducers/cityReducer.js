@@ -1,7 +1,6 @@
 import { ADD_CITY,
          REMOVE_CITY,
-         SET_ACTIVE_CITY,
-         SET_CITY_LIST} from '../types';
+         SET_ACTIVE_CITY} from '../types';
 
 const initialState = {
   cities: [],
@@ -18,18 +17,15 @@ export default (state = initialState, action = {})=>{
     case REMOVE_CITY:
       return {
         ...state,
-          cities: [...state.cities.slice(0, action.payload),
-                   ...state.cities.slice(action.payload + 1)]
+          //cities: [...state.cities.slice(0, action.payload),
+          //         ...state.cities.slice(action.payload + 1)]
+          cities: state.cities.filter(({  id }) => ("" + id) !== action.payload)
+
       };
     case SET_ACTIVE_CITY:
       return {
         ...state,
         activeCity: action.payload
-      };
-    case SET_CITY_LIST:
-      return {
-        ...state,
-        cities: action.payload
       };
 
     default:
